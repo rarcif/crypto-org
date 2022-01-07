@@ -61,12 +61,12 @@ setInterval(async ()=>{
             validator.save()
         }
         if(`${alert_status}`!=='60' && performance <= 60.5 && performance >= 59.5){   
-            notifyLowPerformanceValidator(moniker,performance, alert_status)
+            notifyLowPerformanceValidator(moniker,performance, '60')
             validator.alert_status = '60'
             validator.save()
         }
         if(`${alert_status}`!=='55' && performance <= 55.5 && performance >= 54.5){
-            notifyLowPerformanceValidator(moniker,performance, alert_status)   
+            notifyLowPerformanceValidator(moniker,performance, '55')   
             validator.alert_status = '55'
             validator.save()
         }

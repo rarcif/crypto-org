@@ -2,6 +2,9 @@ const ValidatorRepository = require('../repository/validatorRepository');
 const notify = require('../service/alert-bot');
 const changeAnalysis = require('../service/change_analysis');
 
+const WINDOW_BLOCKS_SIZE_FOR_CALCULATE_PERFORMANCE = parseInt(process.env.WINDOW_BLOCKS_SIZE_FOR_CALCULATE_PERFORMANCE);
+const JAILED_BLOCKS_LIMIT = WINDOW_BLOCKS_SIZE_FOR_CALCULATE_PERFORMANCE * 0.5;
+
 async function updateValidatorTelegramId(validatorId, telegramId) {
     try {
         await ValidatorRepository.updateValidatorTelegramId(validatorId, telegramId);
@@ -35,6 +38,12 @@ async function updateBlocksMissedByConsensusNodeAddress(consensus_node_address, 
                     missed_blocks
                 });
                 validator.alert_status = null; 
+                validator.save();   
+            }
+            if(alert_status !== 'JAILED' && parseInt(missed_blocks) > JAILED_BLOCKS_LIMIT){
+                
+                notify.notifyJailedValidator(moniker);
+                validator.alert_status = 'JAILED'; 
                 validator.save();   
             }
         }

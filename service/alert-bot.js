@@ -1,8 +1,12 @@
 const axios = require('axios');
 const discord = require('discord.js');
+require('dotenv').config();
 
-const DISCORD_URL_WEBHOOK = 'https://discord.com/api/webhooks/912717467296628807/udjtEukV62-IipwrzymkYovUGq6-pCuzAOCEej0EpdV706oHQKBlcq2xnl2PC8TVaOWo';
-const NOTIFY_COLOR_MESSAGE = 2463;
+const DISCORD_URL_WEBHOOK = process.env.DISCORD_URL_WEBHOOK;
+const NOTIFY_COLOR_MESSAGE = process.env.NOTIFY_COLOR_MESSAGE;
+
+console.log(process.env.DISCORD_URL_WEBHOOK,process.env.NOTIFY_COLOR_MESSAGE)
+
 const api = axios.create({
     baseURL: DISCORD_URL_WEBHOOK
 })
@@ -14,17 +18,14 @@ async function notifyJailedValidator(validatorMoniker) {
         "username": "Crypto Alert",
         "embeds": [
             {
-                "title": "Validator Jailed!",
+                "title": "🚫Validator Jailed!",
                 "color": NOTIFY_COLOR_MESSAGE,
                 "fields": [
                     {
                         "name": "Moniker",
-                        "value": validatorMoniker
+                        "value": `${validatorMoniker}`
                     }
-                ],
-                "thumbnail": {
-                    "url": "https://static8.depositphotos.com/1320097/900/v/600/depositphotos_9000472-stock-illustration-not-allowed-sign.jpg"
-                }
+                ]
             }
         ]
     })
@@ -38,7 +39,7 @@ async function notifyJailedValidator(validatorMoniker) {
 async function notifyNewValidator(validator) {
     console.log("Notify New validator in Discord Bot:", validator.moniker)
     const { moniker, max_rate, rate, max_change_rate, operator_address, website, identity, security_contact, details } = validator;
-    const fields = [];
+    let fields = [];
 
     if (typeof moniker !== 'undefined') {
         fields.push({
@@ -90,6 +91,8 @@ async function notifyNewValidator(validator) {
         })
     }
 
+    fields = removeInvalidCharacters(fields);
+
     const json = JSON.stringify({
         "username": "Crypto Alert",
         "embeds": [
@@ -135,6 +138,8 @@ async function notifyLowPerformanceValidator(moniker, performance, alert_status)
             })
         }
 
+        fields = removeInvalidCharacters(fields);
+
         const json = JSON.stringify({
             "username": "Crypto Alert",
             "embeds": [
@@ -179,6 +184,9 @@ async function notifyRecoveryValidator(validator) {
             ]
         })
         console.log(json)
+
+        fields = removeInvalidCharacters(fields);
+
         await api.post("", json, {
             headers: {
                 'Content-Type': 'application/json'
@@ -202,12 +210,12 @@ async function notifyChangeValidator(validator, oldMoniker, changesCount) {
                     "name": "Moniker",
                     "value": `Old: ${oldMoniker}\nNew: ${moniker}`
                 })
-            } else {
+            } /*else {
                 fields.push({
                     "name": "Moniker",
                     "value": `${oldMoniker}`
                 })
-            }
+            }*/
 
         }
         if (typeof status !== 'undefined') {
@@ -293,16 +301,32 @@ async function notifyChangeValidator(validator, oldMoniker, changesCount) {
                 }
             ]
         })
-        console.log(json)
+        console.log(arrayBody)
         await api.post("", json, {
             headers: {
                 'Content-Type': 'application/json'
             }
+        }).catch(err=>{
+            console.log(err)
         })
     } catch (err) {
         console.log("Error in notifyChangeValidator:", err.message)
     }
 
+}
+
+function removeInvalidCharacters(fieldsArray){
+
+    fieldsArray = fieldsArray.map(field=>{
+        if(field.value === '' || field.value === 'null'){
+            field.value = '-';
+            return field
+        }else{
+            return field
+        }
+    })
+
+    return fieldsArray;
 }
 
 module.exports = {

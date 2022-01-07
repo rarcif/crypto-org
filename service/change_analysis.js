@@ -118,7 +118,16 @@ async function run(validatorInfo, validatorInDB) {
             console.log("Notify Message:", notifyMessage)
             if(validatorInDB.status==='BOND_STATUS_BONDED'){
                 notify.notifyChangeValidator(notifyMessage,oldMoniker,changesCount);
-            }            
+            } 
+            if(status==='BOND_STATUS_UNSPECIFIED'){
+                notify.notifyChangeValidator(notifyMessage,oldMoniker,changesCount);
+            }
+            if(status==='BOND_STATUS_UNBONDING'){
+                notify.notifyChangeValidator(notifyMessage,oldMoniker,changesCount);
+            }
+            if(status==='BOND_STATUS_UNBONDED'){
+                notify.notifyChangeValidator(notifyMessage,oldMoniker,changesCount);
+            }              
             console.log("Identified change in validator!");
             console.log(alert)
             validatorInDB.save();

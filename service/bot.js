@@ -4,6 +4,11 @@ const config = require("../config.json");
 
 const ValidatorService = require('../service/ValidatorService');
 
+const WINDOW_BLOCKS_SIZE_FOR_CALCULATE_PERFORMANCE = process.env.WINDOW_BLOCKS_SIZE_FOR_CALCULATE_PERFORMANCE;
+const WEBSITE_LINK = 'https://crypto.org/explorer/validators';
+const BASE_URL_VALIDATOR = 'https://crypto.org/explorer/validator/';
+const HEXADECIMAL_COLOR = '0x0099ff'
+
 client.login(config.token);
 
 client.on("ready", () => {
@@ -30,15 +35,53 @@ client.on("message", async message => {
         m.edit(`Pong! A Latência é ${m.createdTimestamp - message.createdTimestamp}ms.`);
     }
 
+    if (comando === "link") {
+        if (args.length > 0) {
+            const validatorMoniker = args.join(" ");
+            console.log(validatorMoniker)
+            const validator = await ValidatorService.getValidatorByMoniker(validatorMoniker);
+            if (validator) {
+                const { operator_address, moniker } = validator;
+                message.channel.send({
+                    embeds: [{
+                        title: `${moniker} Wallet Link Validator`,
+                        color: HEXADECIMAL_COLOR, description: `${BASE_URL_VALIDATOR}${operator_address}`
+                    }]
+                }).then(msg => {
+                    //setTimeout(() => msg.delete(), 60000)
+                })
+            }else{
+                message.channel.send({
+                    embeds: [{
+                        title: `${validatorMoniker} not found!`,
+                        color: HEXADECIMAL_COLOR
+                    }]
+                }).then(msg => {
+                    //setTimeout(() => msg.delete(), 60000)
+                })
+            }
+
+        } else {
+            message.channel.send({
+                embeds: [{
+                    title: `Wallet Bitcanna Website`,
+                    color: HEXADECIMAL_COLOR, description: `${WEBSITE_LINK}`
+                }]
+            }).then(msg => {
+                //setTimeout(() => msg.delete(), 60000)
+            })
+        }
+    }
+
     if (comando === "missed") {
 
         if (args.length > 0) {
             const validatorMoniker = args.join(" ");
-            const validator = await ValidatorService.getValidatorByMoniker(validatorMoniker)
+            const validator = await ValidatorService.getValidatorByMoniker(validatorMoniker);
             if (validator) {
                 const { moniker,
                     missed_blocks } = validator;
-                const performance = 100 - ((missed_blocks * 100) / 5000)
+                const performance = 100 - ((missed_blocks * 100) / WINDOW_BLOCKS_SIZE_FOR_CALCULATE_PERFORMANCE)
                 const messageBody = `Performance: ${performance}%\nMissed Blocks: ${missed_blocks}`
                 const fields = [{
                     name: moniker,
@@ -48,7 +91,7 @@ client.on("message", async message => {
                 const exampleEmbed = {
                     title: moniker,
                     description: messageBody,
-                    color: "0x0099ff"
+                    color: HEXADECIMAL_COLOR
                 }
                 try {
                     message.channel.send({ embeds: [exampleEmbed] }).then(msg => {
@@ -91,7 +134,7 @@ client.on("message", async message => {
                 const exampleEmbed = {
                     title: `${moniker}`,
                     description: "Validator resume info",
-                    color: "0x0099ff",
+                    color: HEXADECIMAL_COLOR,
                     fields: [{
                         name: "Performance:",
                         value: `${performance}`
@@ -162,13 +205,13 @@ client.on("message", async message => {
                 let notifyMessageFields = [];
                 let notifySimpleNotifyMessage = ""
 
-                fields.map(field =>{
-                    notifySimpleNotifyMessage = notifySimpleNotifyMessage +"• "+ field.name+"\n"
+                fields.map(field => {
+                    notifySimpleNotifyMessage = notifySimpleNotifyMessage + "• " + field.name + "\n"
                 })
                 const exampleEmbed = {
                     title: "BONDED VALIDATORS!",
-                    description: "This message is deleted after 60 seconds!!!\n\n"+notifySimpleNotifyMessage,
-                    color: "0x0099ff",
+                    description: "This message is deleted after 60 seconds!!!\n\n" + notifySimpleNotifyMessage,
+                    color: HEXADECIMAL_COLOR,
                     fields: []
                 }
                 message.channel.send({ embeds: [exampleEmbed] }).then(msg => {
@@ -237,7 +280,7 @@ client.on("message", async message => {
         const exampleEmbed = {
             title: `Help Commands`,
             description: "Type this comands for get Validators info",
-            color: "0x0099ff",
+            color: HEXADECIMAL_COLOR,
             fields: [
                 {
                     name: "!!! INFO !!!",
@@ -254,6 +297,14 @@ client.on("message", async message => {
                 {
                     name: "$missed <Validator Moniker>",
                     value: "This command returns validator performance information"
+                },
+                {
+                    name: "$link",
+                    value: "This command returns the explorer link"
+                },
+                {
+                    name: "$link <Validator Moniker>",
+                    value: "This command returns the validator explorer link"
                 }]
         }
         console.log(exampleEmbed)
