@@ -69,7 +69,7 @@ const Validator = database.define('validator', {
         allowNull: true
     },
     details: {
-        type: Sequelize.STRING,
+        type: Sequelize.TEXT,
         allowNull: true
     },
     identity: {

@@ -1,15 +1,17 @@
 const { Client, Intents, MessageEmbed } = require("discord.js"); //baixar a lib
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
-const config = require("../config.json");
 
 const ValidatorService = require('../service/ValidatorService');
 
 const WINDOW_BLOCKS_SIZE_FOR_CALCULATE_PERFORMANCE = process.env.WINDOW_BLOCKS_SIZE_FOR_CALCULATE_PERFORMANCE;
 const WEBSITE_LINK = 'https://crypto.org/explorer/validators';
 const BASE_URL_VALIDATOR = 'https://crypto.org/explorer/validator/';
-const HEXADECIMAL_COLOR = '0x0099ff'
+const HEXADECIMAL_COLOR = '0x0099ff';
 
-client.login(config.token);
+const BOT_PREFIX = process.env.BOT_PREFIX;
+const BOT_TOKEN = process.env.BOT_TOKEN;
+
+client.login(BOT_TOKEN);
 
 client.on("ready", () => {
     console.log(`Bot foi iniciado com sucesso!`);
@@ -24,9 +26,9 @@ client.on("message", async message => {
 
     if (message.author.bot) return;
     if (message.channel.type === "dm") return;
-    if (!message.content.startsWith(config.prefix)) return;
+    if (!message.content.startsWith(BOT_PREFIX)) return;
 
-    const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
+    const args = message.content.slice(BOT_PREFIX.length).trim().split(/ +/g);
     const comando = args.shift().toLowerCase();
 
     // coamdno ping
@@ -317,5 +319,3 @@ client.on("message", async message => {
         }
     }
 });
-
-client.login(config.token);
